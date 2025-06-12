@@ -48,6 +48,15 @@ export default {
           }
         });
       }
+      
+      // favicon.ico 처리
+      if (url.pathname === '/favicon.ico') {
+        // 빈 favicon 반환 (204 No Content)
+        return new Response(null, {
+          status: 204,
+          headers: corsHeaders
+        });
+      }
 
       // API 라우팅
       if (url.pathname === '/api/status') {

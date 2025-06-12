@@ -3,9 +3,6 @@
   "name": "crawling-system",
   "main": "api-worker.js",
   "compatibility_date": "2025-06-12",
-  "assets": {
-    "directory": "./dist"
-  },
   "dev": {
     "port": 8787
   },
