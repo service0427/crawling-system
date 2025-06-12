@@ -1,13 +1,14 @@
 {
-  "account_id": "d487a4f4ab6dd57899955ec5775f10ce",
-  "name": "crawling-system",
+  // 로컬 개발용 설정 (account_id 없이도 작동)
+  "name": "crawling-system-local",
   "main": "api-worker.js",
-  "compatibility_date": "2025-06-12",
+  "compatibility_date": "2024-01-01",
   "assets": {
     "directory": "./dist"
   },
   "dev": {
-    "port": 8787
+    "port": 8787,
+    "local_protocol": "http"
   },
   // Durable Objects 설정
   "durable_objects": {
@@ -17,7 +18,7 @@
         "class_name": "CrawlingCoordinator"
       },
       {
-        "name": "WEBSOCKET_HANDLER",
+        "name": "WEBSOCKET_HANDLER", 
         "class_name": "WebSocketHandler"
       }
     ]
@@ -32,15 +33,7 @@
       ]
     }
   ],
-  // 환경 변수
   "vars": {
-    "ENVIRONMENT": "production"
-  },
-  // 라우트 설정
-  "routes": [
-    {
-      "pattern": "wapi.mkt-guide.com",
-      "custom_domain": true
-    }
-  ]
+    "ENVIRONMENT": "local"
+  }
 }

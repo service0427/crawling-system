@@ -289,6 +289,18 @@ export class CrawlingCoordinator {
   }
 
   async handleGetStatus(request) {
+    const jobs = Array.from(this.jobs.values());
+    const recentJobs = jobs
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, 10)
+      .map(job => ({
+        jobId: job.id,
+        query: job.query,
+        status: job.status,
+        createdAt: job.createdAt,
+        processingTime: job.completedAt ? job.completedAt - job.createdAt : null
+      }));
+
     const status = {
       agents: {
         total: this.agents.size,
@@ -300,12 +312,15 @@ export class CrawlingCoordinator {
         pending: Array.from(this.jobs.values()).filter(j => j.status === 'pending').length,
         assigned: Array.from(this.jobs.values()).filter(j => j.status === 'assigned').length,
         completed: Array.from(this.jobs.values()).filter(j => j.status === 'completed').length,
-        failed: Array.from(this.jobs.values()).filter(j => j.status === 'failed').length
+        failed: Array.from(this.jobs.values()).filter(j => j.status === 'failed').length,
+        recent: recentJobs
       },
       stats: this.stats
     };
 
-    return new Response(JSON.stringify(status));
+    return new Response(JSON.stringify(status), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   async handleGetAgents(request) {

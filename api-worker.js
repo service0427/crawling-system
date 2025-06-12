@@ -1,6 +1,13 @@
 // CloudFlare Worker API (group-mk 스타일 레거시 Worker)
 // 이 파일은 CloudFlare Worker로 직접 배포할 때 사용됩니다
 
+// Durable Objects export
+export { CrawlingCoordinator } from './src/durable-objects/CrawlingCoordinator.js';
+export { WebSocketHandler } from './src/durable-objects/WebSocketHandler.js';
+
+// Dashboard template
+import { dashboardTemplate } from './src/templates/dashboard.js';
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -21,6 +28,16 @@ export default {
     }
 
     try {
+      // 대시보드 페이지
+      if (url.pathname === '/') {
+        return new Response(dashboardTemplate, {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            ...corsHeaders
+          }
+        });
+      }
+
       // API 라우팅
       if (url.pathname === '/api/status') {
         const coordinatorId = env.COORDINATOR.idFromName('main');

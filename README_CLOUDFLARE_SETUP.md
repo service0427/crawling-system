@@ -27,10 +27,8 @@
 
 ## 환경 설정
 
-### 1. 환경별 구성
-- **develop**: 개발 환경 (dev.crawling.example.com)
-- **test**: 테스트 환경 (test.crawling.example.com)
-- **production**: 프로덕션 환경 (crawling.example.com)
+### 1. 프로덕션 환경
+- **production**: wapi.mkt-guide.com
 
 ### 2. 환경 변수 설정
 `.env.example` 파일을 복사하여 `.env` 파일을 생성하고 실제 값으로 채우세요:
@@ -62,14 +60,12 @@ npm run build:cloudflare
 ### 배포
 ```bash
 # Worker 배포
-npm run deploy:dev    # 개발 환경
-npm run deploy:test   # 테스트 환경
-npm run deploy:prod   # 프로덕션 환경
+npm run deploy        # 프로덕션 환경
+npm run deploy:prod   # 프로덕션 환경 (동일)
 
-# Pages 배포
-npm run deploy:pages:dev    # 개발 환경
-npm run deploy:pages:test   # 테스트 환경
-npm run deploy:pages:prod   # 프로덕션 환경
+# Pages 배포  
+npm run deploy:pages:test   # 테스트 (crawling-system-test)
+npm run deploy:pages:prod   # 프로덕션 (crawling-system)
 
 # 또는 배포 스크립트 사용
 ./deploy-functions.sh develop    # 개발 환경
