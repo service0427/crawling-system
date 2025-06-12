@@ -1,0 +1,31 @@
+# CloudFlare Pages 빌드 설정
+[build]
+command = "npm run build:cloudflare"
+directory = "dist"
+
+# Node.js 버전 설정
+[build.environment]
+NODE_VERSION = "20"
+
+# 배포 설정
+[[deployments]]
+name = "production"
+branch = "main"
+
+[[deployments]]
+name = "develop"
+branch = "develop"
+
+[[deployments]]
+name = "test"
+branch = "test"
+
+# 환경 변수 (CloudFlare 대시보드에서 설정 권장)
+# [context.production.environment]
+# ENVIRONMENT = "production"
+
+# [context.develop.environment]
+# ENVIRONMENT = "develop"
+
+# [context.test.environment]
+# ENVIRONMENT = "test"

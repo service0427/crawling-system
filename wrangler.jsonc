@@ -1,0 +1,93 @@
+{
+  "account_id": "your-account-id",
+  "name": "crawling-system-develop",
+  "main": "src/index.js",
+  "compatibility_date": "2024-01-01",
+  "assets": {
+    "directory": "./dist"
+  },
+  // Durable Objects bindings
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "COORDINATOR",
+        "class_name": "CrawlingCoordinator"
+      },
+      {
+        "name": "WEBSOCKET_HANDLER",
+        "class_name": "WebSocketHandler"
+      }
+    ]
+  },
+  
+  // Durable Objects migrations
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": [
+        "CrawlingCoordinator",
+        "WebSocketHandler"
+      ]
+    }
+  ],
+  // KV namespace bindings
+  "kv_namespaces": [
+    {
+      "binding": "JOBS_KV",
+      "id": "your-jobs-kv-namespace-id",
+      "preview_id": "your-jobs-kv-preview-id"
+    },
+    {
+      "binding": "AGENTS_KV",
+      "id": "your-agents-kv-namespace-id",
+      "preview_id": "your-agents-kv-preview-id"
+    }
+  ],
+  // Environment variables
+  "vars": {
+    "ENVIRONMENT": "develop"
+  },
+  // Development settings
+  "dev": {
+    "port": 8787
+  },
+  // Environment configurations
+  "env": {
+    "production": {
+      "name": "crawling-system",
+      "vars": {
+        "ENVIRONMENT": "production"
+      },
+      "routes": [
+        {
+          "pattern": "crawling.example.com",
+          "custom_domain": true
+        }
+      ]
+    },
+    "develop": {
+      "name": "crawling-system-develop",
+      "vars": {
+        "ENVIRONMENT": "develop"
+      },
+      "routes": [
+        {
+          "pattern": "dev.crawling.example.com",
+          "custom_domain": true
+        }
+      ]
+    },
+    "test": {
+      "name": "crawling-system-test",
+      "vars": {
+        "ENVIRONMENT": "test"
+      },
+      "routes": [
+        {
+          "pattern": "test.crawling.example.com",
+          "custom_domain": true
+        }
+      ]
+    }
+  }
+}

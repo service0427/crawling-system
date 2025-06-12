@@ -1,0 +1,51 @@
+{
+  "name": "distributed-crawling-system-workers",
+  "version": "2.0.0",
+  "description": "Distributed Web Crawling System for CloudFlare Workers",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist node_modules/.wrangler",
+    "dev:app": "echo 'Static files served by CloudFlare Pages dev server'",
+    "dev:worker": "wrangler pages dev --port 9000 ./functions",
+    "dev:worker:legacy": "wrangler dev --config wrangler-dev.jsonc --local --port 9000",
+    "dev": "wrangler dev --port 8787",
+    "dev:legacy": "npm run clean && concurrently \"npm run dev:app\" \"npm run dev:worker:legacy\"",
+    "dev:with-build": "npm run build && bash deploy-functions.sh && wrangler pages dev --port 8787 ./dist",
+    "build": "npm run build:functions && npm run build:routes",
+    "build:cloudflare": "npm run build",
+    "build:functions": "cp -r functions dist/ 2>/dev/null || mkdir -p dist && cp -r functions dist/",
+    "build:routes": "node scripts/create-routes-json.js",
+    "deploy": "npm run build && wrangler deploy --env test",
+    "deploy:test": "npm run build && wrangler deploy --env test",
+    "deploy:develop": "npm run build && wrangler deploy --env develop",
+    "deploy:prod": "npm run build && wrangler deploy --env production",
+    "deploy:pages": "npm run build && bash deploy-functions.sh && wrangler pages deploy dist --project-name crawling-system-test",
+    "deploy:pages:test": "npm run build && bash deploy-functions.sh && wrangler pages deploy dist --project-name crawling-system-test",
+    "deploy:pages:prod": "npm run build && bash deploy-functions.sh && wrangler pages deploy dist --project-name crawling-system-prod",
+    "preview": "wrangler preview",
+    "tail": "wrangler tail",
+    "lint": "eslint src/ functions/",
+    "format": "prettier --write 'src/**/*.js' 'functions/**/*.js'",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "durable-objects",
+    "websocket",
+    "distributed-crawling",
+    "web-scraping"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240112.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4",
+    "wrangler": "^3.22.4"
+  },
+  "dependencies": {
+    "itty-router": "^4.0.23"
+  }
+}

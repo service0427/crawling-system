@@ -1,0 +1,8 @@
+# Redirects 설정
+# 예시: /old-path /new-path 301
+
+# API 리다이렉트 (필요시)
+# /api/v1/* /api/:splat 301
+
+# SPA 라우팅 (필요시)
+# /* /index.html 200
