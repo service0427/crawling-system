@@ -39,5 +39,6 @@ coverage/
 
 # Misc
 *.Zone.Identifier
+*:Zone.Identifier
 .tmp/
 temp/
