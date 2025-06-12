@@ -4,96 +4,101 @@ export const dashboardTemplate = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕷️ 분산 크롤링 시스템 - 모니터링 대시보드</title>
+    <title>분산 크롤링 시스템 대시보드</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             min-height: 100vh;
-            padding: 20px;
         }
-
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
-
+        
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-
+        
         .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-
+        
         .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            font-size: 1.2rem;
+            opacity: 0.8;
         }
-
+        
         .search-section {
             background: rgba(255,255,255,0.1);
-            padding: 20px;
+            padding: 30px;
             border-radius: 12px;
             margin-bottom: 30px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
-
+        
         .search-form {
             display: flex;
             gap: 15px;
             align-items: center;
-            flex-wrap: wrap;
         }
-
+        
         .search-input {
             flex: 1;
-            min-width: 300px;
-            padding: 12px;
-            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 8px;
-            font-size: 16px;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-        }
-
-        .search-btn {
-            padding: 12px 24px;
-            background: #4CAF50;
+            background: rgba(255,255,255,0.1);
             color: white;
+            min-width: 300px;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .search-button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            background: white;
+            color: #667eea;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
         }
-
-        .search-btn:hover {
-            background: #45a049;
+        
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-
-        .search-btn:disabled {
-            background: #666;
+        
+        .search-button:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
-
+        
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-
+        
         .stat-card {
             background: rgba(255,255,255,0.1);
             padding: 20px;
@@ -147,6 +152,13 @@ export const dashboardTemplate = `
             border-radius: 8px;
             margin-bottom: 10px;
             border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .job-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+            cursor: pointer;
         }
 
         .agent-online { border-left-color: #4CAF50; }
@@ -226,6 +238,73 @@ export const dashboardTemplate = `
         .connected { background: #4CAF50; }
         .disconnected { background: #f44336; }
 
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #fff;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #ccc;
+        }
+        
+        .job-detail-content {
+            margin-top: 20px;
+        }
+        
+        .job-detail-section {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .job-detail-section h3 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+        
+        .job-result-data {
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
         @media (max-width: 768px) {
             .content-grid {
                 grid-template-columns: 1fr;
@@ -238,6 +317,11 @@ export const dashboardTemplate = `
             .search-input {
                 min-width: 100%;
             }
+            
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
         }
     </style>
 </head>
@@ -247,32 +331,29 @@ export const dashboardTemplate = `
     </div>
 
     <div class="container">
-        <div class="header">
-            <h1>🕷️ 분산 크롤링 시스템</h1>
-            <p>실시간 모니터링 대시보드</p>
-        </div>
+        <header class="header">
+            <h1>🌐 분산 크롤링 시스템</h1>
+            <p>실시간 크롤링 모니터링 대시보드</p>
+        </header>
 
-        <!-- 검색 섹션 -->
-        <div class="search-section">
-            <form class="search-form" id="searchForm">
-                <input type="text" class="search-input" id="searchInput" 
-                       placeholder="검색어를 입력하세요 (예: 아이폰)" required>
-                <button type="submit" class="search-btn" id="searchBtn">
-                    🔍 검색 시작
+        <section class="search-section">
+            <form id="searchForm" class="search-form">
+                <input type="text" id="searchQuery" class="search-input" placeholder="검색어를 입력하세요..." required>
+                <button type="submit" id="searchButton" class="search-button">
+                    검색 시작
                 </button>
             </form>
-            <div id="searchResult" style="display: none;"></div>
-        </div>
+            <div id="searchResult"></div>
+        </section>
 
-        <!-- 통계 카드 -->
-        <div class="stats-grid">
+        <section class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number" id="activeAgents">0</div>
                 <div class="stat-label">활성 에이전트</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalJobs">0</div>
-                <div class="stat-label">총 작업 수</div>
+                <div class="stat-label">전체 작업</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="completedJobs">0</div>
@@ -280,42 +361,53 @@ export const dashboardTemplate = `
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="avgResponseTime">0ms</div>
-                <div class="stat-label">평균 응답 시간</div>
+                <div class="stat-label">평균 응답시간</div>
             </div>
-        </div>
+        </section>
 
-        <!-- 메인 컨텐츠 -->
-        <div class="content-grid">
-            <!-- 연결된 에이전트 -->
+        <section class="content-grid">
             <div class="panel">
                 <div class="panel-header">
-                    🤖 연결된 에이전트
+                    🖥️ 연결된 에이전트
                 </div>
                 <div class="panel-content" id="agentsPanel">
-                    <div style="text-align: center; opacity: 0.6; padding: 20px;">
-                        에이전트 로딩 중...
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>에이전트 목록을 불러오는 중...</p>
                     </div>
                 </div>
             </div>
-
-            <!-- 최근 작업 -->
+            
             <div class="panel">
                 <div class="panel-header">
-                    📋 최근 작업
+                    📊 최근 작업 내역
                 </div>
                 <div class="panel-content" id="jobsPanel">
-                    <div style="text-align: center; opacity: 0.6; padding: 20px;">
-                        작업 로딩 중...
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>작업 내역을 불러오는 중...</p>
                     </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 작업 상세 모달 -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>작업 상세 정보</h2>
+            <div id="jobDetailContent" class="job-detail-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>작업 정보를 불러오는 중...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let updateInterval;
-        
-        // 시스템 상태 업데이트
+        // 대시보드 업데이트
         async function updateDashboard() {
             try {
                 // 시스템 상태 가져오기
@@ -391,10 +483,10 @@ export const dashboardTemplate = `
             }
             
             jobsPanel.innerHTML = jobs.map(job => \`
-                <div class="job-item job-\${job.status}">
+                <div class="job-item job-\${job.status}" onclick="showJobDetail('\${job.jobId}')">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong>\${job.jobId.substring(0, 8)}...</strong>
+                            <strong>작업 ID: \${job.jobId}</strong>
                             <span class="job-status status-\${job.status}">
                                 \${job.status === 'completed' ? '완료' : 
                                   job.status === 'failed' ? '실패' : 
@@ -413,31 +505,92 @@ export const dashboardTemplate = `
             \`).join('');
         }
         
+        // 작업 상세 정보 표시
+        async function showJobDetail(jobId) {
+            const modal = document.getElementById('jobModal');
+            const content = document.getElementById('jobDetailContent');
+            
+            modal.style.display = 'block';
+            
+            try {
+                const response = await fetch(\`/api/job/\${jobId}\`);
+                const job = await response.json();
+                
+                content.innerHTML = \`
+                    <div class="job-detail-section">
+                        <h3>기본 정보</h3>
+                        <p><strong>작업 ID:</strong> \${job.id}</p>
+                        <p><strong>검색어:</strong> \${job.query}</p>
+                        <p><strong>상태:</strong> <span class="job-status status-\${job.status}">\${
+                            job.status === 'completed' ? '완료' : 
+                            job.status === 'failed' ? '실패' : 
+                            job.status === 'pending' ? '대기' : '진행중'
+                        }</span></p>
+                        <p><strong>생성 시간:</strong> \${new Date(job.createdAt).toLocaleString()}</p>
+                        \${job.completedAt ? \`<p><strong>완료 시간:</strong> \${new Date(job.completedAt).toLocaleString()}</p>\` : ''}
+                        \${job.responseTime ? \`<p><strong>처리 시간:</strong> \${job.responseTime}ms</p>\` : ''}
+                    </div>
+                    
+                    \${job.assignedAgents && job.assignedAgents.length > 0 ? \`
+                        <div class="job-detail-section">
+                            <h3>할당된 에이전트</h3>
+                            <p>\${job.assignedAgents.join(', ')}</p>
+                        </div>
+                    \` : ''}
+                    
+                    \${job.result ? \`
+                        <div class="job-detail-section">
+                            <h3>크롤링 결과</h3>
+                            <div class="job-result-data">\${JSON.stringify(job.result, null, 2)}</div>
+                        </div>
+                    \` : ''}
+                    
+                    \${job.error ? \`
+                        <div class="job-detail-section">
+                            <h3>오류 정보</h3>
+                            <div class="job-result-data" style="color: #ff6b6b;">\${job.error}</div>
+                        </div>
+                    \` : ''}
+                \`;
+            } catch (error) {
+                content.innerHTML = \`
+                    <div class="search-error">
+                        작업 정보를 불러오는데 실패했습니다: \${error.message}
+                    </div>
+                \`;
+            }
+        }
+        
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('jobModal').style.display = 'none';
+        }
+        
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('jobModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
         // 검색 기능
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const query = document.getElementById('searchInput').value;
-            const searchBtn = document.getElementById('searchBtn');
+            const query = document.getElementById('searchQuery').value;
+            const button = document.getElementById('searchButton');
             const resultDiv = document.getElementById('searchResult');
             
-            if (!query.trim()) return;
-            
-            // UI 업데이트
-            searchBtn.disabled = true;
-            searchBtn.innerHTML = '🔄 검색 중...';
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = \`
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div style="margin-top: 10px;">검색 중... 여러 에이전트가 동시에 작업합니다</div>
-                </div>
-            \`;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span> 작업 생성 중...';
             
             try {
                 const response = await fetch('/api/search', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ query })
                 });
                 
@@ -446,89 +599,33 @@ export const dashboardTemplate = `
                 if (response.ok) {
                     resultDiv.innerHTML = \`
                         <div class="search-result">
-                            <strong>검색 작업 생성됨:</strong> \${data.jobId}<br>
-                            <small>결과를 기다리는 중...</small>
+                            <strong>✅ 작업이 생성되었습니다!</strong><br>
+                            작업 ID: \${data.jobId}<br>
+                            상태: \${data.status === 'assigned' ? '에이전트에 할당됨' : '대기 중'}
                         </div>
                     \`;
                     
-                    // 결과 폴링
-                    pollJobResult(data.jobId);
+                    // 대시보드 즉시 업데이트
+                    updateDashboard();
                 } else {
-                    throw new Error(data.error || '검색 실패');
+                    throw new Error(data.error || '작업 생성 실패');
                 }
-                
             } catch (error) {
                 resultDiv.innerHTML = \`
                     <div class="search-error">
-                        <strong>검색 실패:</strong> \${error.message}
+                        <strong>❌ 오류 발생</strong><br>
+                        \${error.message}
                     </div>
                 \`;
             } finally {
-                searchBtn.disabled = false;
-                searchBtn.innerHTML = '🔍 검색 시작';
+                button.disabled = false;
+                button.textContent = '검색 시작';
             }
         });
-        
-        // 작업 결과 폴링
-        async function pollJobResult(jobId) {
-            const maxAttempts = 30;
-            let attempts = 0;
-            const resultDiv = document.getElementById('searchResult');
-            
-            const checkResult = async () => {
-                try {
-                    const response = await fetch(\`/api/job/\${jobId}\`);
-                    const job = await response.json();
-                    
-                    if (job.status === 'completed') {
-                        showSearchResult(job.result);
-                    } else if (job.status === 'failed') {
-                        throw new Error(job.error || '검색 실패');
-                    } else if (attempts < maxAttempts) {
-                        attempts++;
-                        setTimeout(checkResult, 1000);
-                    } else {
-                        throw new Error('검색 타임아웃');
-                    }
-                } catch (error) {
-                    resultDiv.innerHTML = \`
-                        <div class="search-error">
-                            <strong>검색 실패:</strong> \${error.message}
-                        </div>
-                    \`;
-                }
-            };
-            
-            checkResult();
-        }
-        
-        // 검색 결과 표시
-        function showSearchResult(result) {
-            const resultDiv = document.getElementById('searchResult');
-            resultDiv.innerHTML = \`
-                <div class="search-result">
-                    <h3>✅ 검색 완료!</h3>
-                    <p><strong>URL:</strong> \${result.url || '알 수 없음'}</p>
-                    <p><strong>제목:</strong> \${result.title || '알 수 없음'}</p>
-                    <p><strong>HTML 크기:</strong> \${result.htmlSize?.toLocaleString() || 0} bytes</p>
-                    <p><strong>처리 시간:</strong> \${result.processingTime || 0}ms</p>
-                    <p style="margin-top: 10px;">
-                        <small>결과는 가장 빠르게 응답한 에이전트로부터 수신되었습니다.</small>
-                    </p>
-                </div>
-            \`;
-        }
         
         // 초기 로드 및 주기적 업데이트
         updateDashboard();
-        updateInterval = setInterval(updateDashboard, 3000);
-        
-        // 페이지 언로드 시 인터벌 정리
-        window.addEventListener('beforeunload', () => {
-            if (updateInterval) {
-                clearInterval(updateInterval);
-            }
-        });
+        setInterval(updateDashboard, 3000); // 3초마다 업데이트
     </script>
 </body>
 </html>

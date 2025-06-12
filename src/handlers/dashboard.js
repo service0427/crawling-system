@@ -1,4 +1,4 @@
-import { dashboardTemplate } from '../templates/dashboard';
+import { dashboardTemplate } from '../template/dashboard';
 
 export async function handleDashboard(request, env) {
   return new Response(dashboardTemplate, {
