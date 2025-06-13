@@ -538,8 +538,10 @@
             agentsPanel.innerHTML = agents.map(agent => `
                 <div class="agent-item agent-${agent.status}">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong>${agent.id.substring(0, 20)}...</strong>
+                        <div style="max-width: 70%; overflow: hidden;">
+                            <strong title="${agent.id}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${agent.id}
+                            </strong>
                             <span class="agent-status status-${agent.status}">
                                 ${agent.status === 'online' ? '온라인' : '오프라인'}
                             </span>
