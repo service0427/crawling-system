@@ -157,6 +157,18 @@ app.get('/api/status', (req, res) => {
   const pendingJobs = Array.from(jobs.values()).filter(j => j.status === 'pending');
   const completedJobs = Array.from(jobs.values()).filter(j => j.status === 'completed');
   
+  // Get recent jobs
+  const recentJobs = Array.from(jobs.values())
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 10)
+    .map(job => ({
+      jobId: job.id,
+      query: job.query,
+      status: job.status,
+      createdAt: job.createdAt,
+      processingTime: job.completedAt ? job.completedAt - job.createdAt : null
+    }));
+  
   res.json({
     agents: {
       total: agents.size,
@@ -167,7 +179,8 @@ app.get('/api/status', (req, res) => {
       total: jobs.size,
       pending: pendingJobs.length,
       completed: completedJobs.length,
-      failed: Array.from(jobs.values()).filter(j => j.status === 'failed').length
+      failed: Array.from(jobs.values()).filter(j => j.status === 'failed').length,
+      recent: recentJobs
     },
     stats: stats
   });
@@ -206,6 +219,31 @@ app.post('/api/clear-agents', (req, res) => {
   agents.clear();
   
   res.json({ success: true, message: 'All agents cleared' });
+});
+
+// Delete individual job
+app.delete('/api/job/:jobId', (req, res) => {
+  const jobId = req.params.jobId;
+  const job = jobs.get(jobId);
+  
+  if (!job) {
+    return res.status(404).json({ error: 'Job not found' });
+  }
+  
+  // Remove job from agent's current jobs
+  if (job.assignedAgents && job.assignedAgents.length > 0) {
+    job.assignedAgents.forEach(agentId => {
+      const agent = agents.get(agentId);
+      if (agent) {
+        agent.currentJobs = agent.currentJobs.filter(id => id !== jobId);
+      }
+    });
+  }
+  
+  // Delete the job
+  jobs.delete(jobId);
+  
+  res.json({ success: true, message: 'Job deleted successfully' });
 });
 
 // Dashboard route
