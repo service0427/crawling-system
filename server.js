@@ -196,6 +196,9 @@ app.post('/api/agent/get-pending-jobs', (req, res) => {
     return res.json({ jobs: [] });
   }
   
+  // 폴링 요청을 받을 때마다 lastSeen 업데이트
+  agent.lastSeen = Date.now();
+  
   // Find pending jobs
   const pendingJobs = Array.from(jobs.values())
     .filter(job => job.status === 'pending')
