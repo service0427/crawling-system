@@ -675,6 +675,14 @@
                 return;
             }
             
+            // 디버깅: 작업 상태 출력
+            console.log('📋 현재 작업 목록:', jobs.map(j => ({
+                id: j.jobId,
+                status: j.status,
+                query: j.query,
+                processingTime: j.processingTime
+            })));
+            
             jobsPanel.innerHTML = jobs.map(job => `
                 <div class="job-item job-${job.status}" onclick="showJobDetail('${job.jobId}')">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -751,6 +759,13 @@
                                     ? `<pre>${escapeHtml(JSON.stringify(job.result, null, 2))}</pre>`
                                     : escapeHtml(job.result)
                             }</div>
+                        </div>
+                    ` : job.status === 'completed' ? `
+                        <div class="job-detail-section">
+                            <h3>크롤링 결과</h3>
+                            <div class="job-result-data" style="color: #ff9800;">
+                                결과 데이터가 없습니다. (상태: ${job.status})
+                            </div>
                         </div>
                     ` : ''}
                     

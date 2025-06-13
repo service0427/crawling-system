@@ -420,6 +420,23 @@ app.delete('/api/job/:jobId', (req, res) => {
   res.json({ success: true, message: 'Job deleted successfully' });
 });
 
+// Get all jobs (debugging)
+app.get('/api/jobs', (req, res) => {
+  const jobList = Array.from(jobs.values()).map(job => ({
+    id: job.id,
+    query: job.query,
+    status: job.status,
+    createdAt: job.createdAt,
+    assignedAt: job.assignedAt,
+    completedAt: job.completedAt,
+    assignedAgents: job.assignedAgents,
+    result: job.result ? { hasData: true, dataLength: JSON.stringify(job.result).length } : null,
+    error: job.error
+  }));
+  
+  res.json(jobList);
+});
+
 // Dashboard route
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
