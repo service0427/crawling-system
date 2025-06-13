@@ -1062,14 +1062,242 @@
                 
                 if (job.result && job.result.html) {
                     // 새 창 열기
-                    const newWindow = window.open('', '_blank');
+                    const newWindow = window.open('', '_blank', 'width=1200,height=800');
                     
-                    // HTML 내용 작성
-                    newWindow.document.write(job.result.html);
+                    // HTML 에디터 페이지 생성
+                    newWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>HTML 소스 보기 - ${job.query} (${jobId})</title>
+                            <style>
+                                body {
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                    background: #1e1e1e;
+                                    color: #d4d4d4;
+                                }
+                                .header {
+                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    color: white;
+                                    padding: 20px;
+                                    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                                }
+                                .header h1 {
+                                    margin: 0;
+                                    font-size: 1.5rem;
+                                }
+                                .info {
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    opacity: 0.9;
+                                }
+                                .toolbar {
+                                    background: #2d2d30;
+                                    padding: 10px 20px;
+                                    border-bottom: 1px solid #3e3e42;
+                                    display: flex;
+                                    gap: 10px;
+                                    align-items: center;
+                                }
+                                .toolbar button {
+                                    background: #007acc;
+                                    color: white;
+                                    border: none;
+                                    padding: 8px 16px;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                    font-size: 0.9rem;
+                                    transition: background 0.2s;
+                                }
+                                .toolbar button:hover {
+                                    background: #005a9e;
+                                }
+                                .editor-container {
+                                    height: calc(100vh - 140px);
+                                    position: relative;
+                                }
+                                #editor {
+                                    width: 100%;
+                                    height: 100%;
+                                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                                    font-size: 14px;
+                                    line-height: 1.5;
+                                    background: #1e1e1e;
+                                    color: #d4d4d4;
+                                    border: none;
+                                    outline: none;
+                                    resize: none;
+                                    padding: 20px;
+                                    box-sizing: border-box;
+                                    white-space: pre;
+                                    overflow: auto;
+                                }
+                                .line-numbers {
+                                    position: absolute;
+                                    left: 0;
+                                    top: 0;
+                                    width: 50px;
+                                    height: 100%;
+                                    background: #2d2d30;
+                                    color: #858585;
+                                    padding: 20px 10px;
+                                    text-align: right;
+                                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                                    font-size: 14px;
+                                    line-height: 1.5;
+                                    overflow: hidden;
+                                    user-select: none;
+                                }
+                                #editor.with-line-numbers {
+                                    padding-left: 70px;
+                                }
+                                .search-box {
+                                    display: none;
+                                    position: absolute;
+                                    top: 10px;
+                                    right: 20px;
+                                    background: #252526;
+                                    border: 1px solid #3e3e42;
+                                    padding: 10px;
+                                    border-radius: 4px;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                                }
+                                .search-box input {
+                                    background: #3c3c3c;
+                                    border: 1px solid #3e3e42;
+                                    color: #cccccc;
+                                    padding: 5px 10px;
+                                    border-radius: 3px;
+                                    width: 200px;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>🌐 HTML 소스 코드 뷰어</h1>
+                                <div class="info">
+                                    <div>작업 ID: ${jobId}</div>
+                                    <div>검색어: ${job.query}</div>
+                                    <div>크기: ${(job.result.html.length / 1024).toFixed(2)} KB</div>
+                                </div>
+                            </div>
+                            <div class="toolbar">
+                                <button onclick="copyToClipboard()">📋 전체 복사</button>
+                                <button onclick="downloadHTML()">💾 다운로드</button>
+                                <button onclick="formatHTML()">🎨 포맷</button>
+                                <button onclick="toggleLineNumbers()">🔢 줄 번호</button>
+                                <button onclick="toggleSearch()">🔍 찾기</button>
+                                <button onclick="toggleWrap()">↩️ 줄 바꿈</button>
+                            </div>
+                            <div class="search-box" id="searchBox">
+                                <input type="text" id="searchInput" placeholder="검색..." onkeyup="searchInEditor(event)">
+                            </div>
+                            <div class="editor-container">
+                                <div class="line-numbers" id="lineNumbers"></div>
+                                <textarea id="editor" class="with-line-numbers" readonly>${escapeHtml(job.result.html)}</textarea>
+                            </div>
+                            <script>
+                                let wrapEnabled = false;
+                                let lineNumbersEnabled = true;
+                                
+                                function updateLineNumbers() {
+                                    const editor = document.getElementById('editor');
+                                    const lineNumbers = document.getElementById('lineNumbers');
+                                    const lines = editor.value.split('\\n');
+                                    lineNumbers.innerHTML = lines.map((_, i) => i + 1).join('\\n');
+                                }
+                                
+                                function copyToClipboard() {
+                                    const editor = document.getElementById('editor');
+                                    editor.select();
+                                    document.execCommand('copy');
+                                    alert('HTML이 클립보드에 복사되었습니다!');
+                                }
+                                
+                                function downloadHTML() {
+                                    const blob = new Blob([document.getElementById('editor').value], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = 'crawled_${jobId}.html';
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                }
+                                
+                                function formatHTML() {
+                                    const editor = document.getElementById('editor');
+                                    // 간단한 포맷팅 (들여쓰기 추가)
+                                    let formatted = editor.value;
+                                    formatted = formatted.replace(/></g, '>\\n<');
+                                    editor.value = formatted;
+                                    updateLineNumbers();
+                                }
+                                
+                                function toggleLineNumbers() {
+                                    const editor = document.getElementById('editor');
+                                    const lineNumbers = document.getElementById('lineNumbers');
+                                    lineNumbersEnabled = !lineNumbersEnabled;
+                                    if (lineNumbersEnabled) {
+                                        editor.classList.add('with-line-numbers');
+                                        lineNumbers.style.display = 'block';
+                                    } else {
+                                        editor.classList.remove('with-line-numbers');
+                                        lineNumbers.style.display = 'none';
+                                    }
+                                }
+                                
+                                function toggleSearch() {
+                                    const searchBox = document.getElementById('searchBox');
+                                    searchBox.style.display = searchBox.style.display === 'none' ? 'block' : 'none';
+                                    if (searchBox.style.display === 'block') {
+                                        document.getElementById('searchInput').focus();
+                                    }
+                                }
+                                
+                                function toggleWrap() {
+                                    const editor = document.getElementById('editor');
+                                    wrapEnabled = !wrapEnabled;
+                                    editor.style.whiteSpace = wrapEnabled ? 'pre-wrap' : 'pre';
+                                    editor.style.wordWrap = wrapEnabled ? 'break-word' : 'normal';
+                                }
+                                
+                                function searchInEditor(event) {
+                                    if (event.key === 'Enter') {
+                                        const searchTerm = event.target.value;
+                                        const editor = document.getElementById('editor');
+                                        const text = editor.value;
+                                        const index = text.indexOf(searchTerm);
+                                        if (index !== -1) {
+                                            editor.setSelectionRange(index, index + searchTerm.length);
+                                            editor.focus();
+                                            editor.scrollTop = editor.scrollHeight * (index / text.length);
+                                        }
+                                    }
+                                }
+                                
+                                // 초기 줄 번호 업데이트
+                                updateLineNumbers();
+                                
+                                // 에디터 스크롤 시 줄 번호도 함께 스크롤
+                                document.getElementById('editor').addEventListener('scroll', function() {
+                                    document.getElementById('lineNumbers').scrollTop = this.scrollTop;
+                                });
+                                
+                                // Ctrl+F로 검색 열기
+                                document.addEventListener('keydown', function(e) {
+                                    if (e.ctrlKey && e.key === 'f') {
+                                        e.preventDefault();
+                                        toggleSearch();
+                                    }
+                                });
+                            <\/script>
+                        </body>
+                        </html>
+                    `);
                     newWindow.document.close();
-                    
-                    // 제목 설정
-                    newWindow.document.title = `크롤링 결과 - ${job.query} (${jobId})`;
                 } else {
                     await customAlert('HTML 데이터가 없습니다.', '알림');
                 }
