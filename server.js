@@ -162,7 +162,6 @@ app.post('/api/agent/message', (req, res) => {
       break;
       
     case 'HEARTBEAT':
-      console.log(`💓 Heartbeat received from ${agentId}`);
       res.json({
         response: {
           type: 'HEARTBEAT_ACK',
@@ -579,7 +578,6 @@ setInterval(() => {
   // Check agent health (2분 후에 오프라인 판정)
   for (const [agentId, agent] of agents) {
     if (agent.status === 'online' && now - agent.lastSeen > 120000) { // 60초 → 120초로 증가
-      console.log(`🔴 Agent ${agentId} marked as offline. Last seen: ${new Date(agent.lastSeen).toISOString()}, Now: ${new Date(now).toISOString()}`);
       agent.status = 'offline';
       reassignJobs(agentId);
     }
