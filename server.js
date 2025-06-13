@@ -107,8 +107,152 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: Date.now() });
 });
 
-// Create job
+// Agent registration (HTTP polling mode)
+app.post('/api/agent/register', (req, res) => {
+  const { agentId, type, payload } = req.body;
+  
+  // Register agent
+  const agent = {
+    id: agentId,
+    status: 'online',
+    currentJobs: [],
+    lastSeen: Date.now(),
+    stats: {
+      jobsCompleted: 0,
+      jobsFailed: 0
+    }
+  };
+  
+  agents.set(agentId, agent);
+  
+  res.json({
+    response: {
+      type: 'AGENT_REGISTERED',
+      agentId: agentId,
+      serverId: 'main',
+      payload: {
+        agentId: agentId,
+        message: 'Agent successfully registered'
+      }
+    }
+  });
+});
+
+// Agent message handling (HTTP polling mode)
+app.post('/api/agent/message', (req, res) => {
+  const { agentId, type, payload } = req.body;
+  
+  const agent = agents.get(agentId);
+  if (!agent) {
+    return res.status(404).json({ error: 'Agent not found' });
+  }
+  
+  agent.lastSeen = Date.now();
+  
+  switch (type) {
+    case 'JOB_RESULT':
+      handleJobResult(agentId, payload);
+      res.json({
+        response: {
+          type: 'JOB_RESULT_RECEIVED',
+          payload: { jobId: payload.jobId, status: 'received' }
+        }
+      });
+      break;
+      
+    case 'HEARTBEAT':
+      res.json({
+        response: {
+          type: 'HEARTBEAT_ACK',
+          payload: { timestamp: Date.now() }
+        }
+      });
+      break;
+      
+    case 'AGENT_STATUS':
+      if (payload.status) {
+        agent.status = payload.status;
+      }
+      res.json({
+        response: {
+          type: 'STATUS_UPDATED',
+          payload: { status: 'updated' }
+        }
+      });
+      break;
+      
+    default:
+      res.status(400).json({ error: 'Unknown message type' });
+  }
+});
+
+// Get pending jobs for agent (HTTP polling mode)
+app.post('/api/agent/get-pending-jobs', (req, res) => {
+  const { agentId } = req.body;
+  const agent = agents.get(agentId);
+  
+  if (!agent || agent.status !== 'online') {
+    return res.json({ jobs: [] });
+  }
+  
+  // Find pending jobs
+  const pendingJobs = Array.from(jobs.values())
+    .filter(job => job.status === 'pending')
+    .slice(0, 3 - agent.currentJobs.length);
+  
+  const jobsToAssign = [];
+  
+  for (const job of pendingJobs) {
+    agent.currentJobs.push(job.id);
+    job.assignedAgents = [agentId];
+    job.status = 'assigned';
+    job.assignedAt = Date.now();
+    
+    jobsToAssign.push({
+      jobId: job.id,
+      query: job.query,
+      options: job.options || {}
+    });
+  }
+  
+  res.json({ jobs: jobsToAssign });
+});
+
+// Create job (original endpoint)
 app.post('/api/crawl', (req, res) => {
+  const { query, options = {} } = req.body;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required' });
+  }
+
+  const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const job = {
+    id: jobId,
+    query: query,
+    options: options,
+    status: 'pending',
+    createdAt: Date.now(),
+    assignedAt: null,
+    completedAt: null,
+    result: null,
+    error: null,
+    assignedAgents: []
+  };
+
+  jobs.set(jobId, job);
+  
+  // Try to assign job immediately
+  const assigned = assignJobToAgents(job);
+  
+  res.json({
+    jobId: jobId,
+    status: assigned ? 'assigned' : 'queued'
+  });
+});
+
+// Create job (search endpoint - same as crawl)
+app.post('/api/search', (req, res) => {
   const { query, options = {} } = req.body;
   
   if (!query) {
