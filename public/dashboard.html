@@ -481,12 +481,104 @@
         </div>
     </div>
 
+    <!-- 커스텀 Alert/Confirm 모달 -->
+    <div id="customModal" class="modal" style="display: none; z-index: 10000;">
+        <div class="modal-content" style="width: 90%; max-width: 500px; text-align: center;">
+            <h2 id="modalTitle" style="margin: 0 0 20px 0; font-size: 1.5rem;">알림</h2>
+            <p id="modalMessage" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.5;"></p>
+            <div id="modalButtons" style="margin-top: 30px; display: flex; gap: 10px; justify-content: center;">
+                <button id="modalOkBtn" style="
+                    background: white;
+                    color: #667eea;
+                    padding: 12px 30px;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.3)';" 
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">확인</button>
+                <button id="modalCancelBtn" style="
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    padding: 12px 30px;
+                    border: 1px solid rgba(255,255,255,0.3);
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: none;
+                " onmouseover="this.style.background='rgba(255,255,255,0.3)';" 
+                   onmouseout="this.style.background='rgba(255,255,255,0.2)';">취소</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // HTML 이스케이프 함수
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        // 커스텀 Alert 함수
+        function customAlert(message, title = '알림') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalMessage = document.getElementById('modalMessage');
+                const modalOkBtn = document.getElementById('modalOkBtn');
+                const modalCancelBtn = document.getElementById('modalCancelBtn');
+                
+                modalTitle.textContent = title;
+                modalMessage.innerHTML = message.replace(/\n/g, '<br>');
+                modalCancelBtn.style.display = 'none';
+                modal.style.display = 'block';
+                
+                const handleOk = () => {
+                    modal.style.display = 'none';
+                    modalOkBtn.removeEventListener('click', handleOk);
+                    resolve();
+                };
+                
+                modalOkBtn.addEventListener('click', handleOk);
+            });
+        }
+        
+        // 커스텀 Confirm 함수
+        function customConfirm(message, title = '확인') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalMessage = document.getElementById('modalMessage');
+                const modalOkBtn = document.getElementById('modalOkBtn');
+                const modalCancelBtn = document.getElementById('modalCancelBtn');
+                
+                modalTitle.textContent = title;
+                modalMessage.innerHTML = message.replace(/\n/g, '<br>');
+                modalCancelBtn.style.display = 'block';
+                modal.style.display = 'block';
+                
+                const handleOk = () => {
+                    modal.style.display = 'none';
+                    modalOkBtn.removeEventListener('click', handleOk);
+                    modalCancelBtn.removeEventListener('click', handleCancel);
+                    resolve(true);
+                };
+                
+                const handleCancel = () => {
+                    modal.style.display = 'none';
+                    modalOkBtn.removeEventListener('click', handleOk);
+                    modalCancelBtn.removeEventListener('click', handleCancel);
+                    resolve(false);
+                };
+                
+                modalOkBtn.addEventListener('click', handleOk);
+                modalCancelBtn.addEventListener('click', handleCancel);
+            });
         }
         
         // 대시보드 업데이트
@@ -691,7 +783,9 @@
         window.onclick = function(event) {
             const jobModal = document.getElementById('jobModal');
             const allJobsModal = document.getElementById('allJobsModal');
+            const customModal = document.getElementById('customModal');
             
+            // 커스텀 모달은 외부 클릭으로 닫히지 않음
             if (event.target == jobModal) {
                 jobModal.style.display = 'none';
             } else if (event.target == allJobsModal) {
@@ -750,7 +844,8 @@
         
         // 모든 작업 삭제
         async function clearAllJobs() {
-            if (!confirm('정말로 모든 작업을 삭제하시겠습니까?')) {
+            const confirmed = await customConfirm('정말로 모든 작업을 삭제하시겠습니까?', '작업 삭제 확인');
+            if (!confirmed) {
                 return;
             }
             
@@ -765,19 +860,20 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('✅ 모든 작업이 삭제되었습니다.');
+                    await customAlert('✅ 모든 작업이 삭제되었습니다.', '성공');
                     updateDashboard();
                 } else {
                     throw new Error(data.error || '작업 삭제 실패');
                 }
             } catch (error) {
-                alert('❌ 오류 발생: ' + error.message);
+                await customAlert('❌ 오류 발생: ' + error.message, '오류');
             }
         }
         
         // 모든 에이전트 클리어
         async function clearAllAgents() {
-            if (!confirm('정말로 모든 에이전트를 클리어하시겠습니까?')) {
+            const confirmed = await customConfirm('정말로 모든 에이전트를 클리어하시겠습니까?', '에이전트 클리어 확인');
+            if (!confirmed) {
                 return;
             }
             
@@ -792,19 +888,20 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('✅ 모든 에이전트가 클리어되었습니다.');
+                    await customAlert('✅ 모든 에이전트가 클리어되었습니다.', '성공');
                     updateDashboard();
                 } else {
                     throw new Error(data.error || '에이전트 클리어 실패');
                 }
             } catch (error) {
-                alert('❌ 오류 발생: ' + error.message);
+                await customAlert('❌ 오류 발생: ' + error.message, '오류');
             }
         }
         
         // 개별 작업 삭제
         async function deleteJob(jobId) {
-            if (!confirm('이 작업을 삭제하시겠습니까?')) {
+            const confirmed = await customConfirm('이 작업을 삭제하시겠습니까?', '작업 삭제 확인');
+            if (!confirmed) {
                 return;
             }
             
@@ -819,20 +916,21 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('✅ 작업이 삭제되었습니다.');
+                    await customAlert('✅ 작업이 삭제되었습니다.', '성공');
                     closeModal();
                     updateDashboard();
                 } else {
                     throw new Error(data.error || '작업 삭제 실패');
                 }
             } catch (error) {
-                alert('❌ 오류 발생: ' + error.message);
+                await customAlert('❌ 오류 발생: ' + error.message, '오류');
             }
         }
         
         // 개별 에이전트 삭제
         async function deleteAgent(agentId) {
-            if (!confirm(`정말로 에이전트 "${agentId}"를 삭제하시겠습니까?\n진행 중인 작업이 있다면 다시 할당됩니다.`)) {
+            const confirmed = await customConfirm(`정말로 에이전트 "${agentId}"를 삭제하시겠습니까?<br>진행 중인 작업이 있다면 다시 할당됩니다.`, '에이전트 삭제 확인');
+            if (!confirmed) {
                 return;
             }
             
@@ -847,13 +945,13 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('✅ 에이전트가 삭제되었습니다.');
+                    await customAlert('✅ 에이전트가 삭제되었습니다.', '성공');
                     updateDashboard();
                 } else {
                     throw new Error(data.error || '에이전트 삭제 실패');
                 }
             } catch (error) {
-                alert('❌ 오류 발생: ' + error.message);
+                await customAlert('❌ 오류 발생: ' + error.message, '오류');
             }
         }
         
