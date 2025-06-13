@@ -1,0 +1,17 @@
+# Crontab configuration for crawling-system monitoring
+# Add this to your crontab with: crontab -e
+
+# Run health check every 5 minutes
+*/5 * * * * /home/ubuntu/crawling-system/monitoring.sh
+
+# Clean up old logs daily at 2 AM
+0 2 * * * find /home/ubuntu/crawling-system/logs -name "*.log" -mtime +30 -delete
+
+# Restart service weekly on Sunday at 3 AM (optional)
+# 0 3 * * 0 sudo systemctl restart crawling-system
+
+# Backup database daily at 1 AM (if using MongoDB)
+# 0 1 * * * mongodump --out /home/ubuntu/backups/mongo-$(date +\%Y\%m\%d)
+
+# Check for system updates weekly
+# 0 4 * * 1 sudo apt-get update && sudo apt-get upgrade -y

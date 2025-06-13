@@ -1,0 +1,40 @@
+[Unit]
+Description=Crawling System Node.js Service
+Documentation=https://github.com/your-repo/crawling-system
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/crawling-system
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=10
+
+# Environment variables
+Environment="NODE_ENV=production"
+EnvironmentFile=/home/ubuntu/crawling-system/.env
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/ubuntu/crawling-system/logs
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crawling-system
+
+[Install]
+WantedBy=multi-user.target

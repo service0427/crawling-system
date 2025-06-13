@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: crawling-system
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/var/log
+    networks:
+      - crawling-network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: crawling-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - crawling-network
+
+  # Optional: MongoDB for persistence
+  # mongodb:
+  #   image: mongo:6
+  #   container_name: crawling-mongodb
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo-data:/data/db
+  #   environment:
+  #     - MONGO_INITDB_DATABASE=crawling-system
+  #   networks:
+  #     - crawling-network
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: crawling-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - crawling-network
+
+volumes:
+  redis-data:
+  # mongo-data:
+
+networks:
+  crawling-network:
+    driver: bridge
