@@ -538,7 +538,7 @@
             agentsPanel.innerHTML = agents.map(agent => `
                 <div class="agent-item agent-${agent.status}">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="max-width: 70%; overflow: hidden;">
+                        <div style="max-width: 60%; overflow: hidden;">
                             <strong title="${agent.id}" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 ${agent.id}
                             </strong>
@@ -546,8 +546,21 @@
                                 ${agent.status === 'online' ? '온라인' : '오프라인'}
                             </span>
                         </div>
-                        <div style="text-align: right;">
+                        <div style="text-align: right; display: flex; align-items: center; gap: 10px;">
                             <div>${agent.currentJobs.length}개 작업 중</div>
+                            <button onclick="deleteAgent('${agent.id}')" style="
+                                background: rgba(255, 99, 71, 0.8);
+                                color: white;
+                                border: none;
+                                padding: 5px 10px;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.8rem;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='rgba(255, 99, 71, 1)'" 
+                               onmouseout="this.style.background='rgba(255, 99, 71, 0.8)'">
+                                🗑️ 삭제
+                            </button>
                         </div>
                     </div>
                     <div class="agent-details">
@@ -811,6 +824,33 @@
                     updateDashboard();
                 } else {
                     throw new Error(data.error || '작업 삭제 실패');
+                }
+            } catch (error) {
+                alert('❌ 오류 발생: ' + error.message);
+            }
+        }
+        
+        // 개별 에이전트 삭제
+        async function deleteAgent(agentId) {
+            if (!confirm(`정말로 에이전트 "${agentId}"를 삭제하시겠습니까?\n진행 중인 작업이 있다면 다시 할당됩니다.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/agent/${encodeURIComponent(agentId)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ 에이전트가 삭제되었습니다.');
+                    updateDashboard();
+                } else {
+                    throw new Error(data.error || '에이전트 삭제 실패');
                 }
             } catch (error) {
                 alert('❌ 오류 발생: ' + error.message);

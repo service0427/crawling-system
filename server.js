@@ -151,6 +151,7 @@ app.post('/api/agent/message', (req, res) => {
   
   switch (type) {
     case 'JOB_RESULT':
+      console.log('📥 JOB_RESULT received:', { agentId, payload });
       handleJobResult(agentId, payload);
       res.json({
         response: {
@@ -365,6 +366,35 @@ app.post('/api/clear-agents', (req, res) => {
   res.json({ success: true, message: 'All agents cleared' });
 });
 
+// Delete individual agent
+app.delete('/api/agent/:agentId', (req, res) => {
+  const agentId = req.params.agentId;
+  const agent = agents.get(agentId);
+  
+  if (!agent) {
+    return res.status(404).json({ error: 'Agent not found' });
+  }
+  
+  // Close WebSocket connection if exists
+  if (agent.ws && agent.ws.readyState === 1) {
+    agent.ws.close();
+  }
+  
+  // Reassign agent's current jobs
+  agent.currentJobs.forEach(jobId => {
+    const job = jobs.get(jobId);
+    if (job && job.status === 'assigned') {
+      job.status = 'pending';
+      job.assignedAgents = job.assignedAgents.filter(id => id !== agentId);
+    }
+  });
+  
+  // Delete the agent
+  agents.delete(agentId);
+  
+  res.json({ success: true, message: 'Agent deleted successfully' });
+});
+
 // Delete individual job
 app.delete('/api/job/:jobId', (req, res) => {
   const jobId = req.params.jobId;
@@ -439,10 +469,13 @@ function assignJobToAgents(job) {
 
 function handleJobResult(agentId, payload) {
   const { jobId, status, data, error } = payload;
+  console.log('🔄 Processing job result:', { agentId, jobId, status });
+  
   const job = jobs.get(jobId);
   const agent = agents.get(agentId);
 
   if (!job || !agent) {
+    console.error('❌ Job or agent not found:', { jobId, agentId, jobExists: !!job, agentExists: !!agent });
     return;
   }
 
@@ -454,8 +487,19 @@ function handleJobResult(agentId, payload) {
 
   // Update agent
   agent.currentJobs = agent.currentJobs.filter(id => id !== jobId);
+  
+  // Update agent stats (was missing)
+  if (!agent.stats) {
+    agent.stats = { jobsCompleted: 0, jobsFailed: 0 };
+  }
+  
+  if (status === 'completed') {
+    agent.stats.jobsCompleted++;
+  } else {
+    agent.stats.jobsFailed++;
+  }
 
-  // Update stats
+  // Update global stats
   stats.totalJobsProcessed++;
   if (status === 'completed') {
     stats.totalJobsSucceeded++;
@@ -468,6 +512,14 @@ function handleJobResult(agentId, payload) {
   stats.averageResponseTime = 
     (stats.averageResponseTime * (stats.totalJobsProcessed - 1) + responseTime) / 
     stats.totalJobsProcessed;
+    
+  console.log('✅ Job result processed:', { 
+    jobId, 
+    status, 
+    responseTime, 
+    agentStats: agent.stats,
+    globalStats: stats 
+  });
 }
 
 function handleHeartbeat(agentId) {
