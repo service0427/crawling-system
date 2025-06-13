@@ -572,9 +572,9 @@ setInterval(() => {
     }
   }
   
-  // Check agent health
+  // Check agent health (2분 후에 오프라인 판정)
   for (const [agentId, agent] of agents) {
-    if (agent.status === 'online' && now - agent.lastSeen > 60000) {
+    if (agent.status === 'online' && now - agent.lastSeen > 120000) { // 60초 → 120초로 증가
       agent.status = 'offline';
       reassignJobs(agentId);
     }
