@@ -675,13 +675,6 @@
                 return;
             }
             
-            // 디버깅: 작업 상태 출력
-            console.log('📋 현재 작업 목록:', jobs.map(j => ({
-                id: j.jobId,
-                status: j.status,
-                query: j.query,
-                processingTime: j.processingTime
-            })));
             
             jobsPanel.innerHTML = jobs.map(job => `
                 <div class="job-item job-${job.status}" onclick="showJobDetail('${job.jobId}')">

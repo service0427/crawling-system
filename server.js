@@ -25,8 +25,9 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// JSON 요청 크기 제한 증가 (50MB)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // In-memory storage (replace with Redis for production)
 const jobs = new Map();
@@ -151,7 +152,6 @@ app.post('/api/agent/message', (req, res) => {
   
   switch (type) {
     case 'JOB_RESULT':
-      console.log('📥 JOB_RESULT received:', { agentId, payload });
       handleJobResult(agentId, payload);
       res.json({
         response: {
@@ -486,13 +486,11 @@ function assignJobToAgents(job) {
 
 function handleJobResult(agentId, payload) {
   const { jobId, status, data, error } = payload;
-  console.log('🔄 Processing job result:', { agentId, jobId, status });
   
   const job = jobs.get(jobId);
   const agent = agents.get(agentId);
 
   if (!job || !agent) {
-    console.error('❌ Job or agent not found:', { jobId, agentId, jobExists: !!job, agentExists: !!agent });
     return;
   }
 
@@ -529,14 +527,6 @@ function handleJobResult(agentId, payload) {
   stats.averageResponseTime = 
     (stats.averageResponseTime * (stats.totalJobsProcessed - 1) + responseTime) / 
     stats.totalJobsProcessed;
-    
-  console.log('✅ Job result processed:', { 
-    jobId, 
-    status, 
-    responseTime, 
-    agentStats: agent.stats,
-    globalStats: stats 
-  });
 }
 
 function handleHeartbeat(agentId) {
