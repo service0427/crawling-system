@@ -747,6 +747,24 @@
                     ${job.result ? `
                         <div class="job-detail-section">
                             <h3>크롤링 결과</h3>
+                            ${job.result.html ? `
+                                <div style="margin-bottom: 15px;">
+                                    <button onclick="viewFullHTML('${job.id}')" style="
+                                        padding: 10px 20px;
+                                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                        color: white;
+                                        border: none;
+                                        border-radius: 8px;
+                                        font-size: 0.9rem;
+                                        font-weight: bold;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.3)';" 
+                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                        🌐 HTML 전체 보기 (새창)
+                                    </button>
+                                </div>
+                            ` : ''}
                             <div class="job-result-data">${
                                 typeof job.result === 'object' 
                                     ? `<pre>${escapeHtml(JSON.stringify(job.result, null, 2))}</pre>`
@@ -1033,6 +1051,30 @@
                         작업 목록을 불러오는데 실패했습니다: ${error.message}
                     </div>
                 `;
+            }
+        }
+        
+        // HTML 전체 보기 함수
+        async function viewFullHTML(jobId) {
+            try {
+                const response = await fetch(`/api/job/${jobId}`);
+                const job = await response.json();
+                
+                if (job.result && job.result.html) {
+                    // 새 창 열기
+                    const newWindow = window.open('', '_blank');
+                    
+                    // HTML 내용 작성
+                    newWindow.document.write(job.result.html);
+                    newWindow.document.close();
+                    
+                    // 제목 설정
+                    newWindow.document.title = `크롤링 결과 - ${job.query} (${jobId})`;
+                } else {
+                    await customAlert('HTML 데이터가 없습니다.', '알림');
+                }
+            } catch (error) {
+                await customAlert('HTML을 불러오는데 실패했습니다: ' + error.message, '오류');
             }
         }
         
