@@ -1,12 +1,12 @@
 {
-  "account_id": "your-account-id",
-  "name": "crawling-system-develop",
-  "main": "src/index.js",
-  "compatibility_date": "2024-01-01",
-  "assets": {
-    "directory": "./dist"
+  "account_id": "d487a4f4ab6dd57899955ec5775f10ce",
+  "name": "crawling-system",
+  "main": "api-worker.js",
+  "compatibility_date": "2025-06-12",
+  "dev": {
+    "port": 8787
   },
-  // Durable Objects bindings
+  // Durable Objects 설정
   "durable_objects": {
     "bindings": [
       {
@@ -19,7 +19,6 @@
       }
     ]
   },
-  
   // Durable Objects migrations
   "migrations": [
     {
@@ -30,64 +29,15 @@
       ]
     }
   ],
-  // KV namespace bindings
-  "kv_namespaces": [
-    {
-      "binding": "JOBS_KV",
-      "id": "your-jobs-kv-namespace-id",
-      "preview_id": "your-jobs-kv-preview-id"
-    },
-    {
-      "binding": "AGENTS_KV",
-      "id": "your-agents-kv-namespace-id",
-      "preview_id": "your-agents-kv-preview-id"
-    }
-  ],
-  // Environment variables
+  // 환경 변수
   "vars": {
-    "ENVIRONMENT": "develop"
+    "ENVIRONMENT": "production"
   },
-  // Development settings
-  "dev": {
-    "port": 8787
-  },
-  // Environment configurations
-  "env": {
-    "production": {
-      "name": "crawling-system",
-      "vars": {
-        "ENVIRONMENT": "production"
-      },
-      "routes": [
-        {
-          "pattern": "crawling.example.com",
-          "custom_domain": true
-        }
-      ]
-    },
-    "develop": {
-      "name": "crawling-system-develop",
-      "vars": {
-        "ENVIRONMENT": "develop"
-      },
-      "routes": [
-        {
-          "pattern": "dev.crawling.example.com",
-          "custom_domain": true
-        }
-      ]
-    },
-    "test": {
-      "name": "crawling-system-test",
-      "vars": {
-        "ENVIRONMENT": "test"
-      },
-      "routes": [
-        {
-          "pattern": "test.crawling.example.com",
-          "custom_domain": true
-        }
-      ]
+  // 라우트 설정
+  "routes": [
+    {
+      "pattern": "wapi.mkt-guide.com",
+      "custom_domain": true
     }
-  }
+  ]
 }
