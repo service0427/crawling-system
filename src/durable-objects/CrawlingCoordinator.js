@@ -281,7 +281,8 @@ export class CrawlingCoordinator {
         query: job.query,
         status: job.status,
         createdAt: job.createdAt,
-        processingTime: job.completedAt ? job.completedAt - job.createdAt : null
+        processingTime: job.completedAt ? job.completedAt - job.createdAt : null,
+        assignedAgent: job.assignedAgents && job.assignedAgents.length > 0 ? job.assignedAgents[0] : null
       }));
 
     const status = {
