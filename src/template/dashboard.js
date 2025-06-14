@@ -17,12 +17,18 @@ export const dashboardTemplate = `
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .header {
@@ -80,6 +86,7 @@ export const dashboardTemplate = `
             color: #667eea;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-height: 48px;
         }
         
         .search-button:hover {
@@ -94,7 +101,7 @@ export const dashboardTemplate = `
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -124,6 +131,8 @@ export const dashboardTemplate = `
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
+            flex: 1;
+            min-height: 0;
         }
 
         .panel {
@@ -131,6 +140,10 @@ export const dashboardTemplate = `
             border-radius: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 400px;
         }
 
         .panel-header {
@@ -138,12 +151,14 @@ export const dashboardTemplate = `
             border-bottom: 1px solid rgba(255,255,255,0.2);
             font-size: 1.2rem;
             font-weight: 600;
+            flex-shrink: 0;
         }
 
         .panel-content {
             padding: 20px;
-            max-height: 400px;
+            flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .agent-item, .job-item {
@@ -153,6 +168,7 @@ export const dashboardTemplate = `
             margin-bottom: 10px;
             border-left: 4px solid;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .job-item:hover {
@@ -175,6 +191,7 @@ export const dashboardTemplate = `
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .status-online { background: #4CAF50; }
@@ -249,6 +266,7 @@ export const dashboardTemplate = `
             height: 100%;
             background-color: rgba(0,0,0,0.8);
             backdrop-filter: blur(5px);
+            overflow-y: auto;
         }
         
         .modal-content {
@@ -305,9 +323,35 @@ export const dashboardTemplate = `
             overflow-y: auto;
         }
 
+        /* 태블릿 디바이스 */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 100%;
+                padding: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .panel {
+                min-height: 350px;
+            }
+        }
+        
+        /* 모바일 디바이스 */
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
             .content-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
             
             .search-form {
@@ -316,11 +360,109 @@ export const dashboardTemplate = `
             
             .search-input {
                 min-width: 100%;
+                width: 100%;
+            }
+            
+            .search-button {
+                width: 100%;
+                padding: 14px;
             }
             
             .modal-content {
                 width: 95%;
                 margin: 2% auto;
+                padding: 15px;
+            }
+            
+            .panel-header {
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+            
+            .panel {
+                height: auto;
+                min-height: 300px;
+            }
+            
+            /* 버튼 그룹 반응형 */
+            .search-section > div:last-child {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search-section button {
+                width: 100%;
+                margin: 0 !important;
+            }
+            
+            /* 에이전트/작업 카드 스타일 */
+            .agent-item, .job-item {
+                background: rgba(255,255,255,0.08);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            
+            .agent-item > div:first-child,
+            .job-item > div:first-child {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start !important;
+            }
+            
+            .agent-details,
+            .job-details {
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+            }
+        }
+        
+        /* 소형 모바일 디바이스 */
+        @media (max-width: 480px) {
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .search-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+            
+            .connection-status {
+                top: 10px;
+                right: 10px;
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            
+            /* 모달 버튼 모바일 최적화 */
+            #modalButtons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            #modalButtons button {
+                width: 100%;
             }
         }
     </style>
@@ -345,7 +487,7 @@ export const dashboardTemplate = `
             </form>
             <div id="searchResult"></div>
             
-            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <button onclick="showAllJobs()" style="
                     padding: 8px 20px;
                     font-size: 0.9rem;
@@ -354,9 +496,10 @@ export const dashboardTemplate = `
                     background: #2196F3;
                     color: white;
                     cursor: pointer;
+                    min-height: 40px;
                 ">📋 전체 작업 내역 보기</button>
                 
-                <div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button onclick="clearAllJobs()" style="
                         padding: 8px 20px;
                         font-size: 0.9rem;
@@ -365,7 +508,7 @@ export const dashboardTemplate = `
                         background: #f44336;
                         color: white;
                         cursor: pointer;
-                        margin-right: 10px;
+                        min-height: 40px;
                     ">🗑️ 모든 작업 삭제</button>
                     
                     <button onclick="clearAllAgents()" style="
@@ -376,6 +519,7 @@ export const dashboardTemplate = `
                         background: #ff9800;
                         color: white;
                         cursor: pointer;
+                        min-height: 40px;
                     ">🧹 모든 에이전트 클리어</button>
                 </div>
             </div>
@@ -975,9 +1119,60 @@ export const dashboardTemplate = `
             }
         }
         
+        // 패널 높이 동적 조정
+        function adjustPanelHeight() {
+            const panels = document.querySelectorAll('.panel');
+            const windowHeight = window.innerHeight;
+            const header = document.querySelector('.header');
+            const searchSection = document.querySelector('.search-section');
+            const statsGrid = document.querySelector('.stats-grid');
+            const connectionStatus = document.querySelector('.connection-status');
+            
+            // 다른 요소들의 높이 계산
+            const headerHeight = header ? header.offsetHeight : 0;
+            const searchHeight = searchSection ? searchSection.offsetHeight : 0;
+            const statsHeight = statsGrid ? statsGrid.offsetHeight : 0;
+            const statusHeight = connectionStatus ? connectionStatus.offsetHeight : 0;
+            
+            // 여백 계산 (container padding, section margins 등)
+            const margins = 180; // 대략적인 여백 합계
+            
+            // 사용 가능한 높이 계산
+            const availableHeight = windowHeight - headerHeight - searchHeight - statsHeight - margins;
+            
+            // 최소 높이 설정
+            const minHeight = 400;
+            const panelHeight = Math.max(availableHeight, minHeight);
+            
+            // 패널에 높이 적용
+            panels.forEach(panel => {
+                if (window.innerWidth > 768) {
+                    panel.style.height = \`\${panelHeight}px\`;
+                } else {
+                    panel.style.height = 'auto';
+                    panel.style.minHeight = '300px';
+                }
+            });
+        }
+        
+        // 창 크기 변경 시 높이 재조정
+        window.addEventListener('resize', adjustPanelHeight);
+        
+        // 초기 로드 시 높이 조정
+        window.addEventListener('load', () => {
+            adjustPanelHeight();
+        });
+        
         // 초기 로드 및 주기적 업데이트
-        updateDashboard();
-        setInterval(updateDashboard, 3000); // 3초마다 업데이트
+        updateDashboard().then(() => {
+            setTimeout(adjustPanelHeight, 100);
+        });
+        
+        setInterval(() => {
+            updateDashboard().then(() => {
+                setTimeout(adjustPanelHeight, 100);
+            });
+        }, 3000); // 3초마다 업데이트
     </script>
 </body>
 </html>
