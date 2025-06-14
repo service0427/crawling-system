@@ -465,12 +465,85 @@ export const dashboardTemplate = `
                 width: 100%;
             }
         }
+        
+        /* Toast 메시지 스타일 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            pointer-events: none;
+        }
+        
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            pointer-events: all;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 500px;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .toast.error {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+            color: white;
+        }
+        
+        .toast.info {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+        
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+        
+        .toast-message {
+            flex: 1;
+        }
+        
+        @media (max-width: 480px) {
+            .toast-container {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                transform: none;
+            }
+            
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="connection-status connected" id="connectionStatus">
         🟢 시스템 정상
     </div>
+    
+    <!-- Toast 메시지 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <div class="container">
         <header class="header">
@@ -485,7 +558,6 @@ export const dashboardTemplate = `
                     검색 시작
                 </button>
             </form>
-            <div id="searchResult"></div>
             
             <div style="margin-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <button onclick="showAllJobs()" style="
@@ -634,6 +706,43 @@ export const dashboardTemplate = `
             return div.innerHTML;
         }
         
+        // Toast 메시지 함수
+        function showToast(message, type = 'info', duration = 3000) {
+            const toastContainer = document.getElementById('toastContainer');
+            
+            // Toast 엘리먼트 생성
+            const toast = document.createElement('div');
+            toast.className = \`toast \${type}\`;
+            
+            // 아이콘 선택
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            toast.innerHTML = \`
+                <span class="toast-icon">\${icons[type] || icons.info}</span>
+                <span class="toast-message">\${escapeHtml(message)}</span>
+            \`;
+            
+            toastContainer.appendChild(toast);
+            
+            // 애니메이션 트리거
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // 자동 제거
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        }
+        
         // 대시보드 업데이트
         async function updateDashboard() {
             try {
@@ -713,7 +822,7 @@ export const dashboardTemplate = `
                 <div class="job-item job-\${job.status}" onclick="showJobDetail('\${job.jobId}')">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong>작업 ID: \${job.jobId}</strong>
+                            <strong>\${job.assignedAgent ? \`에이전트: \${job.assignedAgent}\` : '미할당'}</strong>
                             <span class="job-status status-\${job.status}">
                                 \${job.status === 'completed' ? '완료' : 
                                   job.status === 'failed' ? '실패' : 
@@ -725,8 +834,9 @@ export const dashboardTemplate = `
                         </div>
                     </div>
                     <div class="job-details">
-                        검색어: \${job.query}<br>
+                        검색어: \${escapeHtml(job.query)}<br>
                         생성: \${new Date(job.createdAt).toLocaleString()}
+                        \${job.jobId ? \`<br><span style="opacity: 0.7; font-size: 0.85em;">ID: \${job.jobId}</span>\` : ''}
                     </div>
                 </div>
             \`).join('');
@@ -846,13 +956,12 @@ export const dashboardTemplate = `
             
             const query = document.getElementById('searchQuery').value;
             const button = document.getElementById('searchButton');
-            const resultDiv = document.getElementById('searchResult');
             
             button.disabled = true;
             button.innerHTML = '<span class="spinner"></span> 작업 생성 중...';
             
             try {
-                const response = await fetch('/api/search', {
+                const response = await fetch('/api/crawl', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -863,13 +972,15 @@ export const dashboardTemplate = `
                 const data = await response.json();
                 
                 if (response.ok) {
-                    resultDiv.innerHTML = \`
-                        <div class="search-result">
-                            <strong>✅ 작업이 생성되었습니다!</strong><br>
-                            작업 ID: \${data.jobId}<br>
-                            상태: \${data.status === 'assigned' ? '에이전트에 할당됨' : '대기 중'}
-                        </div>
-                    \`;
+                    // Toast 메시지로 성공 알림
+                    showToast(
+                        \`작업이 생성되었습니다! (\${data.status === 'assigned' ? '에이전트에 할당됨' : '대기 중'})\`,
+                        'success',
+                        4000
+                    );
+                    
+                    // 입력 필드 초기화
+                    document.getElementById('searchQuery').value = '';
                     
                     // 대시보드 즉시 업데이트
                     updateDashboard();
@@ -877,12 +988,8 @@ export const dashboardTemplate = `
                     throw new Error(data.error || '작업 생성 실패');
                 }
             } catch (error) {
-                resultDiv.innerHTML = \`
-                    <div class="search-error">
-                        <strong>❌ 오류 발생</strong><br>
-                        \${error.message}
-                    </div>
-                \`;
+                // Toast 메시지로 오류 알림
+                showToast(\`오류 발생: \${error.message}\`, 'error', 5000);
             } finally {
                 button.disabled = false;
                 button.textContent = '검색 시작';
